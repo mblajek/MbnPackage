@@ -1,5 +1,5 @@
 {
-  "name": "mirkles/mbn",
+  "name": "mblajek/mbn",
   "type": "library",
   "description": "Library for PHP and JS to do calculations with any precision and correct (half-up) approximations.",
   "keywords": [
