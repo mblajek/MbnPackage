@@ -321,7 +321,7 @@ var Mbn = (function () {
        */
       var mbnFromNumber = function (a, nn) {
          if (!isFinite(nn)) {
-            throw new MbnErr("limit_exceeded", nn);
+            throw new MbnErr("limit_exceeded", MbnL);
          }
          if (nn < 0) {
             nn = -nn;
