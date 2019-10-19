@@ -1,4 +1,4 @@
-/* Mbn v1.47 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://github.com/mblajek/Mbn/blob/master/LICENSE.txt */
+/* Mbn v1.47 / 20.10.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 "use strict";
 
 var Mbn = (function () {
@@ -187,7 +187,7 @@ var Mbn = (function () {
         }
         if (opt.hasOwnProperty("MbnL")) {
             MbnL = opt.MbnL;
-            if (typeof MbnL !== "number" || MbnL <= 0 || !isFinite(MbnP) || Math.round(MbnL) !== MbnL) {
+            if (typeof MbnL !== "number" || MbnL <= 0 || !isFinite(MbnL) || Math.round(MbnL) !== MbnL) {
                 throw new MbnErr(fname + "invalid_limit", MbnL);
             }
         }
@@ -342,6 +342,9 @@ var Mbn = (function () {
          */
         var mbnFromNumber = function (a, nn) {
             if (!isFinite(nn)) {
+                if (isNaN(nn)) {
+                    throw new MbnErr("invalid_argument", nn);
+                }
                 throw new MbnErr("limit_exceeded", MbnL);
             }
             if (nn < 0) {

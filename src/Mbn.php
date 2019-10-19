@@ -1,4 +1,4 @@
-<?php /* Mbn v1.47 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://github.com/mblajek/Mbn/blob/master/LICENSE.txt */
+<?php /* Mbn v1.47 / 20.10.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 namespace Mbn;
 class Mbn {
     //version of Mbn library
@@ -70,8 +70,8 @@ class Mbn {
         }
         if (array_key_exists('MbnL', $opt)) {
             $MbnL = $opt['MbnL'];
-            if (!(is_int($MbnL) || is_float($MbnL)) || $MbnL < 0 || is_infinite($MbnP) || (float)(int)$MbnP !== (float)$MbnP) {
-                throw new MbnErr($fname . 'invalid_limit', $MbnP);
+            if (!(is_int($MbnL) || is_float($MbnL)) || $MbnL < 0 || is_infinite($MbnL) || (float)(int)$MbnL !== (float)$MbnL) {
+                throw new MbnErr($fname . 'invalid_limit', $MbnL);
             }
         }
         return ['MbnV' => static::$MbnV, 'MbnP' => $MbnP, 'MbnS' => $MbnS, 'MbnT' => $MbnT, 'MbnE' => $MbnE, 'MbnF' => $MbnF, 'MbnL' => $MbnL];
@@ -203,6 +203,9 @@ class Mbn {
      */
     private function mbnFromNumber($nn) {
         if (!is_finite($nn)) {
+            if (is_nan($nn)) {
+                throw new MbnErr('invalid_argument', $nn);
+            }
             throw new MbnErr('limit_exceeded', static::$MbnL);
         }
         if ($nn < 0) {
