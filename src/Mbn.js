@@ -1,4 +1,4 @@
-/* Mbn v1.47 / 20.10.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+/* Mbn v1.47 / 21.10.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 "use strict";
 
 var Mbn = (function () {
@@ -1145,11 +1145,12 @@ var Mbn = (function () {
          * @throws {MbnErr} invalid argument format
          */
         Mbn.def = function (n, v) {
-            if (n === null) {
-                return hasOwnProperty.call(MbnConst, v);
+            var check = (n === null);
+            if (!cnRx.test(check ? v : n)) {
+                throw new MbnErr("def.invalid_name", check ? v : n);
             }
-            if (!cnRx.test(n)) {
-                throw new MbnErr("def.invalid_name", n);
+            if (check) {
+                return hasOwnProperty.call(MbnConst, v);
             }
             if (v === undefined) {
                 if (!hasOwnProperty.call(MbnConst, n)) {

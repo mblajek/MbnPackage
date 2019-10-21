@@ -1,4 +1,4 @@
-<?php /* Mbn v1.47 / 20.10.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+<?php /* Mbn v1.47 / 21.10.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 namespace Mbn;
 class MbnErr extends \Exception {
     /* Common error message object */
