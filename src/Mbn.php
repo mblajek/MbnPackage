@@ -1,8 +1,8 @@
-<?php /* Mbn v1.47 / 21.10.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+<?php /* Mbn v1.48 / 20.11.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 namespace Mbn;
 class Mbn {
     //version of Mbn library
-    protected static $MbnV = '1.47';
+    protected static $MbnV = '1.48';
     //default precision
     protected static $MbnP = 2;
     //default separator
@@ -294,7 +294,7 @@ class Mbn {
         if (is_float($n) || is_int($n)) {
             $this->mbnFromNumber($n);
         } elseif (is_string($n) || (is_object($n) && method_exists($n, '__toString'))) {
-            if ($n instanceof static) {
+            if ($n instanceof static && $n::$MbnP === static::$MbnP) {
                 $this->set($n);
                 return;
             }
@@ -323,7 +323,7 @@ class Mbn {
      * @throws MbnErr invalid argument format
      */
     public function set($b) {
-        if (!($b instanceof static)) {
+        if (!($b instanceof static && $b::$MbnP === static::$MbnP)) {
             $this->mbnSetReturn(new static($b), true);
         } else {
             $this->d = $b->d;
@@ -383,7 +383,7 @@ class Mbn {
         if ($d !== 0) {
             $dm = new static($d);
         }
-        if (!($b instanceof static)) {
+        if (!($b instanceof static && $b::$MbnP === static::$MbnP)) {
             $b = new static($b);
         }
         if ($d === 0 || $dm->s === 0) {
@@ -422,7 +422,7 @@ class Mbn {
      * @throws MbnErr invalid argument format
      */
     public function add($b, $m = false) {
-        if (!($b instanceof static)) {
+        if (!($b instanceof static && $b::$MbnP === static::$MbnP)) {
             $b = new static($b);
         }
         $r = new static($b);
@@ -461,7 +461,7 @@ class Mbn {
      * @throws MbnErr invalid argument format
      */
     public function sub($b, $m = false) {
-        if (!($b instanceof static)) {
+        if (!($b instanceof static && $b::$MbnP === static::$MbnP)) {
             $b = new static($b);
         }
         $r = new static($b);
@@ -505,7 +505,7 @@ class Mbn {
      * @throws MbnErr invalid argument format
      */
     public function mul($b, $m = false) {
-        if (!($b instanceof static)) {
+        if (!($b instanceof static && $b::$MbnP === static::$MbnP)) {
             $b = new static($b);
         }
         $r = new static($b);
@@ -538,7 +538,7 @@ class Mbn {
      * @throws MbnErr invalid argument format
      */
     public function div($b, $m = false) {
-        if (!($b instanceof static)) {
+        if (!($b instanceof static && $b::$MbnP === static::$MbnP)) {
             $b = new static($b);
         }
         if ($b->s === 0) {
@@ -616,7 +616,7 @@ class Mbn {
      * @throws MbnErr invalid argument format
      */
     public function mod($b, $m = false) {
-        $ba = ($b instanceof static) ? $b->abs() : (new static($b))->abs();
+        $ba = ($b instanceof static && $b::$MbnP === static::$MbnP) ? $b->abs() : (new static($b))->abs();
         $r = $this->sub($this->div($ba)->intp()->mul($ba));
         if (($r->s * $this->s) === -1) {
             $r = $ba->sub($r->abs());
@@ -1103,7 +1103,8 @@ class Mbn {
     public static function check($exp, $omitConsts = false) {
         try {
             $varNames = [];
-            foreach (static::mbnCalc($exp, false) as $varName => &$_) {
+            $calcVars = static::mbnCalc($exp, false);
+            foreach ($calcVars as $varName => &$_) {
                 if ($omitConsts !== true || !static::def(null, $varName)) {
                     $varNames[] = $varName;
                 }
@@ -1151,6 +1152,7 @@ class Mbn {
             } else {
                 $tok = $mtch[1];
                 $expr = substr($expr, strlen($mtch[0]));
+                $expr = ($expr === false) ? "" : $expr;
             }
             switch ($t) {
                 case 'num':
@@ -1235,7 +1237,7 @@ class Mbn {
         $rpn = [];
 
         foreach ($rpns as &$tn) {
-            if ($tn instanceof static) {
+            if ($tn instanceof static && $tn::$MbnP === static::$MbnP) {
                 $rpn[] = &$tn;
             } elseif (isset(static::$fnEval[$tn])) {
                 if (is_string(static::$fnEval[$tn])) {

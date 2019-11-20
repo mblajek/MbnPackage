@@ -1,4 +1,4 @@
-/* Mbn v1.47 / 21.10.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+/* Mbn v1.48 / 20.11.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 "use strict";
 
 var Mbn = (function () {
@@ -126,7 +126,7 @@ var Mbn = (function () {
     };
 
     //version of Mbn library
-    var MbnV = "1.47";
+    var MbnV = "1.48";
     //default precision
     var MbnDP = 2;
     //default separator
