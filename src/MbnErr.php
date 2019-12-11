@@ -1,4 +1,4 @@
-<?php /* Mbn v1.48 / 20.11.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+<?php /* Mbn v1.49 / 11.12.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 namespace Mbn;
 class MbnErr extends \Exception {
     /* Common error message object */
@@ -15,7 +15,7 @@ class MbnErr extends \Exception {
        ],
        'def' => [
           'undefined' => 'undefined constant: %v%',
-          'already_set' => 'constant already set: %v%',
+          'already_set' => 'constant already set: %v% = %w%',
           'invalid_name' => 'invalid name for constant: %v%'
        ],
        'div' => [
@@ -40,8 +40,8 @@ class MbnErr extends \Exception {
           'invalid_function' => 'invalid function name: %v%',
           'no_array' => 'no array given',
           'invalid_argument_count' => 'two arguments can be used only with two-argument functions',
-          'different_lengths' => 'arrays have different lengths: %v%',
-          'different_keys' => 'arrays have different keys: %v%'
+          'different_lengths' => 'arrays have different lengths: %v%, %w%',
+          'different_keys' => 'arrays have different keys: [%v%], [%w%]'
        ],
        'split' => [
           'invalid_part_count' => 'only positive integer number of parts supported: %v%',
@@ -53,7 +53,7 @@ class MbnErr extends \Exception {
     ];
 
     public $errorKey;
-    public $errorValue;
+    public $errorValues;
     private static $translation = null;
 
     public static function translate($translation) {
@@ -86,21 +86,28 @@ class MbnErr extends \Exception {
      * @export
      * @constructor
      * @param string $key key error code
-     * @param mixed $val incorrect value to message
+     * @param mixed $values incorrect value to message
+     * @param bool $multi passing array with multiple values
      */
-    public function __construct($key, $val = null) {
-        if ($val !== null) {
-            $val = static::valToMsgString($val);
-            $val = ((strlen($val) > 20) ? (substr($val, 0, 18) . '..') : $val);
+    public function __construct($key, $values = null, $multi = false) {
+        $valArr = [];
+        if (func_num_args() !== 1) {
+            if (!is_array($values) || $multi !== true) {
+                $values = ['v' => $values];
+            }
+            foreach ($values as $name => $val) {
+                $val = static::valToMsgString($val);
+                $valArr[$name] = ((strlen($val) > 20) ? (substr($val, 0, 18) . '..') : $val);
+            }
         }
         $this->errorKey = 'mbn.' . $key;
-        $this->errorValue = $val;
+        $this->errorValues = $valArr;
 
         $msg = null;
         $translation = static::$translation;
         if (is_callable($translation)) {
             try {
-                $msg = $translation($this->errorKey, $this->errorValue);
+                $msg = $translation($this->errorKey, $valArr);
             } catch (Exception $e) {
             }
         }
@@ -112,8 +119,7 @@ class MbnErr extends \Exception {
                 $msg .= '.' . $keyArr[0];
             }
             $subMessages = &static::$messages;
-            for ($i = 0; $i < $keyArrLength; $i++) {
-                $word = $keyArr[$i];
+            foreach ($keyArr as $word) {
                 $nextSubMessages = &$subMessages[$word];
                 if (is_array($nextSubMessages) && isset($nextSubMessages['_'])) {
                     $nextSubMessages = &$subMessages[$nextSubMessages['_']];
@@ -122,7 +128,11 @@ class MbnErr extends \Exception {
             }
             $msg .= ' error: ' . $subMessages;
         }
-        parent::__construct(str_replace('%v%', $val, $msg));
+        foreach ($valArr as $name => &$val) {
+            $msg = str_replace('%' . $name . '%', $val, $msg);
+        }
+        unset($val);
+        parent::__construct($msg);
     }
 
 }

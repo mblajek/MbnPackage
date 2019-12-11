@@ -1,8 +1,8 @@
-<?php /* Mbn v1.48 / 20.11.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+<?php /* Mbn v1.49 / 11.12.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 namespace Mbn;
 class Mbn {
     //version of Mbn library
-    protected static $MbnV = '1.48';
+    protected static $MbnV = '1.49';
     //default precision
     protected static $MbnP = 2;
     //default separator
@@ -986,9 +986,9 @@ class Mbn {
             $r = [];
             if ($bmode === 2 && array_keys($arr) !== array_keys($b)) {
                 if (count($arr) !== count($b)) {
-                    throw new MbnErr('reduce.different_lengths', '(' . count($arr) . ' ' . count($b) . ')');
+                    throw new MbnErr('reduce.different_lengths', ['v' => count($arr), 'w' => count($b)], true);
                 }
-                throw new MbnErr('reduce.different_keys', '(' . implode(',', array_keys($arr)) . ' ' . implode(',', array_keys($b)) . ')');
+                throw new MbnErr('reduce.different_keys', ['v' => implode(',', array_keys($arr)), 'w' => implode(',', array_keys($b))], true);
             }
             $bv = ($bmode === 1) ? (new static($b)) : null;
             foreach ($arr as $k => &$v) {
@@ -1042,7 +1042,7 @@ class Mbn {
             return $res->set($mc[$mx][$n]);
         }
         if (isset($mc[$mx][$n]) || isset($mc[''][$n])) {
-            throw new MbnErr('def.already_set', $n);
+            throw new MbnErr('def.already_set', ['v' => $n, 'w' => new static(isset($mc[$mx][$n]) ? $mc[$mx][$n] : $mc[''][$n])], true);
         }
         $mc[$mx][$n] = $res->set($v)->add(0);
         return $res;
