@@ -1,4 +1,4 @@
-<?php /* Mbn v1.49 / 11.12.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+<?php /* Mbn v1.49 / 13.12.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 namespace Mbn;
 class Mbn {
     //version of Mbn library
@@ -140,6 +140,7 @@ class Mbn {
 
     /**
      * Private function, removes last digit and rounds next-to-last depending on it
+     * @throws MbnErr exceeded MbnL digits limit
      */
     private function mbnRoundLast() {
         $ad = &$this->d;
@@ -437,12 +438,12 @@ class Mbn {
                 } else {
                     $r->set($this);
                 }
-                $rl = count($r->d);
-                for ($i = 0; $i < $rl; $i++) {
+                foreach ($r->d as $i => &$di) {
                     if ($i >= $ld) {
-                        $r->d[$i] += $b->d[$i - $ld];
+                        $di += $b->d[$i - $ld];
                     }
                 }
+                unset($di);
                 $r->mbnCarry();
             } else {
                 $r->s = -$r->s;
@@ -481,12 +482,12 @@ class Mbn {
                 } else {
                     $r->set($this);
                 }
-                $rl = count($r->d);
-                for ($i = 0; $i < $rl; $i++) {
+                foreach ($r->d as $i => &$di) {
                     if ($i >= $ld) {
-                        $r->d[$i] -= $b->d[$i - $ld];
+                        $di -= $b->d[$i - $ld];
                     }
                 }
+                unset($di);
                 $r->s = $cmp * $this->s;
                 $r->mbnCarry();
             }
@@ -510,12 +511,10 @@ class Mbn {
         }
         $r = new static($b);
         $r->d = [];
-        $tc = count($this->d);
-        $bc = count($b->d);
-        for ($i = 0; $i < $tc; $i++) {
-            for ($j = 0; $j < $bc; $j++) {
+        foreach ($this->d as $i => $tdi) {
+            foreach ($b->d as $j => $bdi) {
                 $ipj = $i + $j;
-                $r->d[$ipj] = $this->d[$i] * $b->d[$j] + (isset($r->d[$ipj]) ? $r->d[$ipj] : 0);
+                $r->d[$ipj] = $tdi * $bdi + (isset($r->d[$ipj]) ? $r->d[$ipj] : 0);
             }
         }
         $r->s = $this->s * $b->s;
@@ -1104,7 +1103,7 @@ class Mbn {
         try {
             $varNames = [];
             $calcVars = static::mbnCalc($exp, false);
-            foreach ($calcVars as $varName => &$_) {
+            foreach ($calcVars as $varName => $_) {
                 if ($omitConsts !== true || !static::def(null, $varName)) {
                     $varNames[] = $varName;
                 }
@@ -1152,7 +1151,7 @@ class Mbn {
             } else {
                 $tok = $mtch[1];
                 $expr = substr($expr, strlen($mtch[0]));
-                $expr = ($expr === false) ? "" : $expr;
+                $expr = ($expr === false) ? '' : $expr;
             }
             switch ($t) {
                 case 'num':
@@ -1178,16 +1177,17 @@ class Mbn {
                         throw new MbnErr('calc.undefined', $tok);
                     }
                     break;
+                case 'fs':
                 case 'bop':
-                    $bop = static::$ops[$tok];
+                    $op = static::$ops[$tok];
                     while (($rolp = array_pop($rpno)) !== null) {
-                        if ($rolp === '(' || ($rolp[0] <= $bop[0] - ($bop[1] ? 1 : 0))) {
+                        if ($rolp === '(' || ($rolp[0] <= $op[0] - ($op[1] ? 1 : 0))) {
                             $rpno[] = $rolp;
                             break;
                         }
                         $rpns[] = $rolp[2];
                     }
-                    $rpno[] = $bop;
+                    $rpno[] = $op;
                     break;
                 case 'uop':
                     if ($tok === '-') {
@@ -1204,17 +1204,6 @@ class Mbn {
                         }
                         $rpns[] = $rolp[2];
                     }
-                    break;
-                case 'fs':
-                    $op = static::$ops[$tok];
-                    while (($rolp = array_pop($rpno)) !== null) {
-                        if ($rolp === '(' || ($rolp[0] <= $op[0] - ($op[1] ? 1 : 0))) {
-                            $rpno[] = $rolp;
-                            break;
-                        }
-                        $rpns[] = $rolp[2];
-                    }
-                    $rpno[] = $op;
                     break;
                 default:
             }
