@@ -1,4 +1,4 @@
-<?php /* Mbn v1.49 / 13.12.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+<?php /* Mbn v1.50 / 31.03.2020 | https://mirkl.es/n/lib | Copyright (c) 2016-2020 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 namespace Mbn;
 class MbnErr extends \Exception {
     /* Common error message object */
@@ -63,7 +63,7 @@ class MbnErr extends \Exception {
     /**
      * Convert value to readable string
      * @param mixed $val value to stringify
-     * @param bool $implodeArr implode array (first level) or replace contents with ".."
+     * @param bool $implodeArr implode array (first level) or replace contents with '..'
      * @return string
      */
     private static function valToMsgString($val, $implodeArr = true) {

@@ -1,4 +1,4 @@
-/* Mbn v1.49 / 13.12.2019 | https://mirkl.es/n/lib | Copyright (c) 2016-2019 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+/* Mbn v1.50 / 31.03.2020 | https://mirkl.es/n/lib | Copyright (c) 2016-2020 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
 "use strict";
 
 var Mbn = (function () {
@@ -70,7 +70,7 @@ var Mbn = (function () {
             } else {
                 valArr.push("..");
             }
-            return "[" + valArr.join(',') + "]";
+            return "[" + valArr.join(",") + "]";
         }
         return String(val);
     };
@@ -139,7 +139,7 @@ var Mbn = (function () {
     };
 
     //version of Mbn library
-    var MbnV = "1.49";
+    var MbnV = "1.50";
     //default precision
     var MbnDP = 2;
     //default separator
@@ -305,7 +305,7 @@ var Mbn = (function () {
             mbnCarry(a);
         };
 
-        var wsRx2 = /^\s*(=)?[\s=]*([+\-])?\s*((.*\S)?)/;
+        var wsRx2 = /^\s*(=)?[\s=]*([-+])?\s*((?:[\s\S]*\S)?)/;
         /**
          * Private function, sets value from string
          * @param {Mbn} a
@@ -328,19 +328,21 @@ var Mbn = (function () {
                 al = ln + 1;
             }
             var l = Math.max(al + MbnP, nl);
-            var c;
-            for (var i = 0; i <= l; i++) {
+            var i, c, cs = 0;
+            for (i = 0; i <= l; i++) {
                 c = (i < nl) ? (n.charCodeAt(i) - 48) : 0;
                 if (c >= 0 && c <= 9) {
                     if (i <= al + MbnP) {
                         a._d.push(c);
                     }
-                } else if ((i !== ln || nl === 1) && (c !== -16 || (i + 1) >= ln)) {
-                    if (v !== false && ((v instanceof Object) || v === true || MbnE === true || (MbnE !== false && np[1] === "="))) {
+                } else if (!((i === ln && nl !== 1) || (c === -16 && i > cs && (i + 1) < ln))) {
+                    if (v === true || (v instanceof Object) || (v !== false && (MbnE === true || (MbnE === null && np[1] === "=")))) {
                         a.set(mbnCalc(ns, v));
                         return;
                     }
                     throw new MbnErr("invalid_format", ns);
+                } else if (c === -16) {
+                    cs = i + 1;
                 }
             }
             mbnRoundLast(a);
@@ -1083,7 +1085,7 @@ var Mbn = (function () {
         };
 
         var fnReduce = {
-            set: 0, abs: 1, inva: 1, invm: 1, ceil: 1, floor: 1, sqrt: 1, round: 1, sgn: 1, intp: 1,
+            set: 0, abs: 1, inva: 1, invm: 1, ceil: 1, floor: 1, sqrt: 1, round: 1, sgn: 1, intp: 1, fact: 1,
             min: 2, max: 2, add: 2, sub: 2, mul: 2, div: 2, mod: 2, pow: 2
         };
         /**
@@ -1127,7 +1129,7 @@ var Mbn = (function () {
             } else {
                 r = [];
                 if (bmode === 2 && arrl !== b.length) {
-                    throw new MbnErr("reduce.different_lengths", {'v': arrl, 'w': b.length}, true);
+                    throw new MbnErr("reduce.different_lengths", {"v": arrl, "w": b.length}, true);
                 }
                 var bv = (bmode === 1) ? (new Mbn(b)) : null;
                 for (i = 0; i < arrl; i++) {
@@ -1187,8 +1189,10 @@ var Mbn = (function () {
             sqrt: true, round: true, sgn: true, int: "intp", div_100: "div_100"
         };
         var states = {
-            endBop: ["bop", "pc", "fs"],
-            uopVal: ["num", "name", "uop", "po"]
+            endBop: ["bop", "pc", "fs", "cs"],
+            uopVal: ["num", "name", "uop", "po", "cs"],
+            po: ["po", "cs"],
+            com: ["ca", "ce"]
         };
         var ops = {
             "|": [1, true, "max"],
@@ -1207,13 +1211,16 @@ var Mbn = (function () {
         var rxs = {
             num: {rx: /^([0-9., ]+)\s*/, next: states.endBop},
             name: {rx: /^([A-Za-z_]\w*)\s*/},
-            fn: {next: ["po"]},
+            fn: {next: states.po},
             vr: {next: states.endBop},
             bop: {rx: /^([-+*\/#^&|])\s*/, next: states.uopVal},
             uop: {rx: /^([-+])\s*/, next: states.uopVal},
             po: {rx: /^(\()\s*/, next: states.uopVal},
             pc: {rx: /^(\))\s*/, next: states.endBop},
-            fs: {rx: /^([%!])\s*/, next: states.endBop}
+            fs: {rx: /^([%!])\s*/, next: states.endBop},
+            cs: {rx: /^({+)\s*/, next: states.com},
+            ca: {rx: /^([^}]+)\s*/, next: states.com},
+            ce: {rx: /^(}+)\s*/, next: states.com}
         };
 
         var wsRx3 = /^[\s=]+/;
@@ -1276,6 +1283,8 @@ var Mbn = (function () {
             var rpns = [];
             var rpno = [];
             var stateLength, t, tok, mtch, i, rolp;
+            var commentLevel = 0;
+            var commentState = null;
 
             while (expr !== "") {
                 mtch = null;
@@ -1284,16 +1293,14 @@ var Mbn = (function () {
                     t = state[i];
                     mtch = expr.match(rxs[t].rx);
                 }
-                if (mtch === null) {
-                    if (state === states.endBop) {
-                        tok = "*";
-                        t = "bop";
-                    } else {
-                        throw new MbnErr("calc.unexpected", expr);
-                    }
-                } else {
+                if (mtch !== null) {
                     tok = mtch[1];
                     expr = expr.slice(mtch[0].length);
+                } else if (state === states.endBop && !expr.match(rxs.num.rx)) {
+                    tok = "*";
+                    t = "bop";
+                } else {
+                    throw new MbnErr("calc.unexpected", expr);
                 }
                 switch (t) {
                     case "num":
@@ -1347,6 +1354,19 @@ var Mbn = (function () {
                             rpns.push(rolp[2]);
                         }
                         break;
+                    case "cs":
+                        commentLevel = tok.length;
+                        commentState = state;
+                        break;
+                    case "ce":
+                        if (commentLevel === tok.length) {
+                            state = commentState;
+                            continue;
+                        } else if (commentLevel < tok.length) {
+                            throw new MbnErr("calc.unexpected", tok);
+                        }
+                        break;
+                    case "ca":
                     default:
                 }
 
@@ -1358,7 +1378,7 @@ var Mbn = (function () {
                 }
                 rpns.push(rolp[2]);
             }
-            if (state !== states.endBop) {
+            if (state !== states.endBop && (state !== states.com || commentState !== states.endBop)) {
                 throw new MbnErr("calc.unexpected", "END");
             }
 
