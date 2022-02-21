@@ -1,4 +1,4 @@
-<?php /* Mbn v1.50 / 31.03.2020 | https://mirkl.es/n/lib | Copyright (c) 2016-2020 Mikołaj Błajek | https://mirkl.es/n/LICENSE */
+<?php /* Mbn v1.51 / 22.02.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
 namespace Mbn;
 class MbnErr extends \Exception {
     /* Common error message object */
@@ -70,6 +70,9 @@ class MbnErr extends \Exception {
         if ($val === null) {
             return 'null';
         }
+        if (is_string($val)) {
+            return '"' . $val . '"';
+        }
         if (is_scalar($val)) {
             return is_bool($val) ? ($val ? 'true' : 'false') : (string)$val;
         }
@@ -108,7 +111,7 @@ class MbnErr extends \Exception {
         if (is_callable($translation)) {
             try {
                 $msg = $translation($this->errorKey, $valArr);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
             }
         }
         if (!is_string($msg)) {
@@ -136,3 +139,4 @@ class MbnErr extends \Exception {
     }
 
 }
+
