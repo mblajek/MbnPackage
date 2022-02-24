@@ -1,8 +1,9 @@
 {
   "name": "mblajek-mbn",
-  "version": "1.51.0",
+  "version": "1.51.1",
   "description": "Library for PHP and JS to do calculations with any precision and correct (half-up) rounding.",
   "main": "src/Mbn.js",
+  "types": "src/Mbn.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mblajek/MbnPackage.git"

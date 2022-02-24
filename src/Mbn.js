@@ -1,4 +1,4 @@
-/* Mbn v1.51 / 22.02.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
+/* Mbn v1.51.1 / 24.02.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
 "use strict";
 
 var Mbn = (function () {
@@ -139,7 +139,7 @@ var Mbn = (function () {
     };
 
     //version of Mbn library
-    var MbnV = "1.51";
+    var MbnV = "1.51.1";
     //default precision
     var MbnDP = 2;
     //default separator

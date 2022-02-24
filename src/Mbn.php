@@ -1,8 +1,8 @@
-<?php /* Mbn v1.51 / 22.02.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
+<?php /* Mbn v1.51.1 / 24.02.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
 namespace Mbn;
 class Mbn {
     //version of Mbn library
-    protected static $MbnV = '1.51';
+    protected static $MbnV = '1.51.1';
     //default precision
     protected static $MbnP = 2;
     //default separator

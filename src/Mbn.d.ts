@@ -1,4 +1,4 @@
-/* Mbn v1.51 / 22.02.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
+/* Mbn v1.51.1 / 24.02.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
 type MbnArg = number | boolean | null | undefined | string | Mbn;
 
 type MbnOneArgFn = "set" | "abs" | "inva" | "invm" | "ceil" | "floor" | "sqrt" | "round" | "sgn" | "intp";
@@ -72,7 +72,9 @@ interface Mbn {
 
 
 interface MbnConstructor {
-    new(n?: MbnArg, v?: boolean | Record<string, MbnArg>): Mbn;
+    (n?: MbnArg, v?: boolean | Partial<Record<string, MbnArg>>): Mbn;
+
+    new(n?: MbnArg, v?: boolean | Partial<Record<string, MbnArg>>): Mbn;
 
     reduce(fn: MbnOneArgFn, arr: MbnArg[]): Mbn[];
 
@@ -86,7 +88,7 @@ interface MbnConstructor {
 
     def(n: null, v?: string): boolean;
 
-    calc(exp: string, vars?: Record<string, MbnArg>): Mbn;
+    calc(exp: string, vars?: Partial<Record<string, MbnArg>>): Mbn;
 
     check(exp: string): string[] | false;
 
