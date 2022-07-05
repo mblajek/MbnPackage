@@ -1,4 +1,4 @@
-/* Mbn v1.51.1 / 24.02.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
+/* Mbn v1.52.0 / 05.07.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
 "use strict";
 
 var Mbn = (function () {
@@ -51,9 +51,15 @@ var Mbn = (function () {
             negative_value: "square root of negative value: %v%"
         }
     };
-    var hasOwnProperty = {}.hasOwnProperty;
     var errTranslation = null;
-
+    /**
+     * @param {Object} val
+     * @param {*} key
+     * @returns {boolean}
+     */
+    var own = function (val, key) {
+        return messages.hasOwnProperty.call(val, key)
+    }
     /**
      * Convert value to readable string
      * @param {*} val value to stringify
@@ -62,9 +68,9 @@ var Mbn = (function () {
      */
     var valToMsgString = function (val, implodeArr) {
         if (val instanceof Array) {
-            var valArr = [];
+            var valArr = [], i;
             if (implodeArr === undefined || implodeArr === true) {
-                for (var i = 0; i < val.length; i++) {
+                for (i = 0; i < val.length; i++) {
                     valArr.push(valToMsgString(val[i], false));
                 }
             } else {
@@ -90,7 +96,7 @@ var Mbn = (function () {
                 values = {v: values};
             }
             for (i in values) {
-                if (values.hasOwnProperty(i)) {
+                if (own(values, i)) {
                     val = valToMsgString(values[i]);
                     valObj[i] = ((val.length > 20) ? (val.slice(0, 18) + "..") : val);
                 }
@@ -117,7 +123,7 @@ var Mbn = (function () {
             for (i = 0; i < keyArrLength; i++) {
                 var word = keyArr[i];
                 var nextSubMessages = subMessages[word];
-                if (typeof nextSubMessages === "object" && nextSubMessages.hasOwnProperty("_")) {
+                if (typeof nextSubMessages === "object" && own(nextSubMessages, "_")) {
                     nextSubMessages = subMessages[nextSubMessages._];
                 }
                 subMessages = nextSubMessages;
@@ -125,7 +131,7 @@ var Mbn = (function () {
             msg += " error: " + subMessages;
         }
         for (i in valObj) {
-            if (valObj.hasOwnProperty(i)) {
+            if (own(valObj, i)) {
                 msg = msg.replace("%" + i + "%", valObj[i]);
             }
         }
@@ -139,7 +145,7 @@ var Mbn = (function () {
     };
 
     //version of Mbn library
-    var MbnV = "1.51.1";
+    var MbnV = "1.52.0";
     //default precision
     var MbnDP = 2;
     //default separator
@@ -168,37 +174,37 @@ var Mbn = (function () {
      */
     var prepareOpt = function (opt, MbnDP, MbnDS, MbnDT, MbnDE, MbnDF, MbnDL, fname) {
         var MbnP = MbnDP, MbnS = MbnDS, MbnT = MbnDT, MbnE = MbnDE, MbnF = MbnDF, MbnL = MbnDL;
-        if (opt.hasOwnProperty("MbnP")) {
+        if (own(opt, "MbnP")) {
             MbnP = opt.MbnP;
             if (typeof MbnP !== "number" || MbnP < 0 || !isFinite(MbnP) || Math.round(MbnP) !== MbnP) {
                 throw new MbnErr(fname + "invalid_precision", MbnP);
             }
         }
-        if (opt.hasOwnProperty("MbnS")) {
+        if (own(opt, "MbnS")) {
             MbnS = opt.MbnS;
             if (MbnS !== "." && MbnS !== ",") {
                 throw new MbnErr(fname + "invalid_separator", MbnS);
             }
         }
-        if (opt.hasOwnProperty("MbnT")) {
+        if (own(opt, "MbnT")) {
             MbnT = opt.MbnT;
             if (MbnT !== true && MbnT !== false) {
                 throw new MbnErr(fname + "invalid_truncation", MbnT);
             }
         }
-        if (opt.hasOwnProperty("MbnE")) {
+        if (own(opt, "MbnE")) {
             MbnE = opt.MbnE;
             if (MbnE !== true && MbnE !== false && MbnE !== null) {
                 throw new MbnErr(fname + "invalid_evaluating", MbnE);
             }
         }
-        if (opt.hasOwnProperty("MbnF")) {
+        if (own(opt, "MbnF")) {
             MbnF = opt.MbnF;
             if (MbnF !== true && MbnF !== false) {
                 throw new MbnErr(fname + "invalid_formatting", MbnF);
             }
         }
-        if (opt.hasOwnProperty("MbnL")) {
+        if (own(opt, "MbnL")) {
             MbnL = opt.MbnL;
             if (typeof MbnL !== "number" || MbnL <= 0 || !isFinite(MbnL) || Math.round(MbnL) !== MbnL) {
                 throw new MbnErr(fname + "invalid_limit", MbnL);
@@ -337,7 +343,7 @@ var Mbn = (function () {
                     }
                 } else if (!((i === ln && nl !== 1) || (c === -16 && i > cs && (i + 1) < ln))) {
                     if (v === true || (v instanceof Object) || (v !== false && (MbnE === true || (MbnE === null && np[1] === "=")))) {
-                        a.set(mbnCalc(ns, v));
+                        a.set(mbnCalc(ns, v, null));
                         return;
                     }
                     throw new MbnErr("invalid_format", ns);
@@ -1075,7 +1081,7 @@ var Mbn = (function () {
             if (!this.isInt() || this._s === -1) {
                 throw new MbnErr("fact.invalid_value", this);
             }
-            var n = this.sub(1), r = new Mbn(this);
+            var n = this.sub(1), r = this.max(1);
             while (n._s === 1) {
                 r.mul(n, true);
                 n.sub(1, true);
@@ -1102,7 +1108,7 @@ var Mbn = (function () {
          */
         Mbn.reduce = function (fn, arr, b) {
             var inv = false;
-            if (!fnReduce.hasOwnProperty(fn)) {
+            if (!own(fnReduce, fn)) {
                 throw new MbnErr("reduce.invalid_function", fn);
             }
             if (!(arr instanceof Array)) {
@@ -1164,10 +1170,10 @@ var Mbn = (function () {
                 throw new MbnErr("def.invalid_name", check ? v : n);
             }
             if (check) {
-                return hasOwnProperty.call(MbnConst, v);
+                return own(MbnConst, v);
             }
             if (v === undefined) {
-                if (!hasOwnProperty.call(MbnConst, n)) {
+                if (!own(MbnConst, n)) {
                     throw new MbnErr("def.undefined", n);
                 }
                 if (!(MbnConst[n] instanceof Mbn)) {
@@ -1175,7 +1181,7 @@ var Mbn = (function () {
                 }
                 return new Mbn(MbnConst[n]);
             }
-            if (hasOwnProperty.call(MbnConst, n)) {
+            if (own(MbnConst, n)) {
                 throw new MbnErr("def.already_set", {v: n, w: new Mbn(MbnConst[n])}, true);
             }
             v = new Mbn(v);
@@ -1185,7 +1191,7 @@ var Mbn = (function () {
 
         var fnEval = {
             abs: true, inva: false, ceil: true, floor: true, fact: true,
-            sqrt: true, round: true, sgn: true, int: "intp", div_100: "div_100"
+            sqrt: true, round: true, sgn: true, "int": "intp", div_100: "div_100"
         };
         var states = {
             endBop: ["bop", "pc", "fs"],
@@ -1233,25 +1239,16 @@ var Mbn = (function () {
         /**
          * Check expression, get names of used vars
          * @param {string} exp Expression
-         * @param {boolean} omitConsts don't list already defined constants
+         * @param {boolean=} omitOptional Omit vars available as constans or results
          * @return {Array|boolean}
          */
-        Mbn.check = function (exp, omitConsts) {
+        Mbn.check = function (exp, omitOptional) {
             try {
-                var varName, vars = mbnCalc(exp, false), varNames = [];
+                var varName, vars = mbnCalc(exp, false, omitOptional === true), varNames = [];
                 for (varName in vars) {
-                    if (hasOwnProperty.call(vars, varName)) {
+                    if (own(vars, varName)) {
                         varNames[vars[varName]] = varName;
                     }
-                }
-                if (omitConsts === true) {
-                    var pos = 0;
-                    for (var i = 0; i < varNames.length; i++) {
-                        if (!Mbn.def(null, varNames[i])) {
-                            varNames[pos++] = varNames[i];
-                        }
-                    }
-                    varNames.length = pos;
                 }
                 return varNames;
             } catch (e) {
@@ -1261,35 +1258,49 @@ var Mbn = (function () {
         /**
          * Evaluate expression
          * @param {string} exp Expression
-         * @param {Object|boolean=} vars Object with vars for evaluation
+         * @param {Object|boolean|undefined} vars Object with vars for evaluation
+         * @param {boolean|null} checkOmitOptional Omit vars available as constans or results
          * @return {Mbn|Object}
          * @throws {MbnErr} syntax error, operation error
          */
-        var mbnCalc = function (exp, vars) {
-            var onlyCheck = vars === false;
+        var mbnCalc = function (exp, vars, checkOmitOptional) {
+            var expr = String(exp), varsUsed = {size: 0, vars: {}}
             if (!(vars instanceof Object)) {
                 vars = {};
             }
-
-            var varsUsed = {};
-            var varsUsedSize = 0;
-            var state = states.uopVal;
-            var rpns = [], rpno = [];
-            var stateLength, t, tok, mtch, i, rolp, comStart, comEnd;
-
-            var expr = String(exp);
+            var mtch, comStart, comEnd, i, results = {r0: new Mbn()};
             while (mtch = expr.match(/{+/)) {
                 mtch = mtch[0];
                 comStart = expr.indexOf(mtch);
                 comEnd = expr.indexOf(mtch.replace(/{/g, "}"), comStart);
                 expr = expr.slice(0, comStart) + ((comEnd === -1)
-                    ? "" : ("\t" + expr.slice(comEnd + mtch.length)))
+                   ? "" : ("\t" + expr.slice(comEnd + mtch.length)))
             }
-            expr = expr.replace(wsRx3, "");
+            var exprArr = expr.split(";");
+            for (i = 0; i < exprArr.length; i++) {
+                expr = exprArr[i].replace(wsRx3, "");
+                results["r" + (i + 1)] = results.r0 = ((expr === "") ? results.r0
+                   : mbnCalcSingle(expr, vars, results, varsUsed, checkOmitOptional));
+            }
+            return (checkOmitOptional === null) ? results.r0 : varsUsed.vars;
+        };
+
+        /**
+         * Evaluate expression
+         * @param {string} expr Expression
+         * @param {Object} vars Object with vars for evaluation
+         * @param {Object} results Object with used vars
+         * @param {Object} varsUsed Object with used vars
+         * @param {boolean|null} checkOmitOptional Bool: only check syntax and used vars
+         * @return {Mbn|null}
+         * @throws {MbnErr} syntax error, operation error
+         */
+        var mbnCalcSingle = function (expr, vars, results, varsUsed, checkOmitOptional) {
+            var state = states.uopVal, rpns = [], rpno = [];
+            var t, tok, mtch, i, rolp;
             while (expr !== "") {
                 mtch = null;
-                stateLength = state.length;
-                for (i = 0; i < stateLength && mtch === null; i++) {
+                for (i = 0; i < state.length && mtch === null; i++) {
                     t = state[i];
                     mtch = expr.match(rxs[t].rx);
                 }
@@ -1308,18 +1319,20 @@ var Mbn = (function () {
                         break;
                     case "name":
                         t = "vr";
-                        if (hasOwnProperty.call(fnEval, tok) && fnEval[tok] !== false) {
+                        if (own(fnEval, tok) && fnEval[tok] !== false) {
                             t = "fn";
                             rpno.push(ops.fn.concat([tok]));
-                        } else if (onlyCheck) {
-                            if (!hasOwnProperty.call(varsUsed, tok)) {
-                                varsUsed[tok] = varsUsedSize++;
+                        } else if (checkOmitOptional !== null) {
+                            if (!own(varsUsed.vars, tok) && (!checkOmitOptional || (!own(results, tok) && !Mbn.def(null, tok)))) {
+                                varsUsed.vars[tok] = varsUsed.size++;
                             }
-                        } else if (hasOwnProperty.call(vars, tok)) {
-                            if (!hasOwnProperty.call(varsUsed, tok)) {
-                                varsUsed[tok] = new Mbn(vars[tok]);
+                        } else if (own(vars, tok)) {
+                            if (!own(varsUsed.vars, tok)) {
+                                varsUsed.vars[tok] = new Mbn(vars[tok]);
                             }
-                            rpns.push(new Mbn(varsUsed[tok]));
+                            rpns.push(new Mbn(varsUsed.vars[tok]));
+                        } else if (own(results, tok)) {
+                            rpns.push(new Mbn(results[tok]));
                         } else if (Mbn.def(null, tok)) {
                             rpns.push(Mbn.def(tok));
                         } else {
@@ -1369,19 +1382,16 @@ var Mbn = (function () {
                 throw new MbnErr("calc.unexpected", "END");
             }
 
-            if (onlyCheck) {
-                return varsUsed;
+            if (checkOmitOptional !== null) {
+                return null;
             }
 
-            var rpn = [];
-            var rpnsl = rpns.length;
-            var tn;
-
-            for (i = 0; i < rpnsl; i++) {
+            var rpn = [], tn;
+            for (i = 0; i < rpns.length; i++) {
                 tn = rpns[i];
                 if (tn instanceof Mbn) {
                     rpn.push(tn);
-                } else if (fnEval.hasOwnProperty(tn)) {
+                } else if (own(fnEval, tn)) {
                     if (typeof fnEval[tn] === "string") {
                         tn = fnEval[tn];
                         if (tn.indexOf("_") !== -1) {
@@ -1405,5 +1415,5 @@ var Mbn = (function () {
     return Mbn;
 })();
 if (typeof module === "object") {
-    module.exports.default = module.exports = Mbn;
+    module.exports["default"] = module.exports = Mbn;
 }
