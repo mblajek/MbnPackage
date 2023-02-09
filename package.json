@@ -1,6 +1,6 @@
 {
   "name": "mblajek-mbn",
-  "version": "1.52.0",
+  "version": "1.52.1",
   "description": "Library for PHP and JS to do calculations with any precision and correct (half-up) rounding.",
   "main": "src/Mbn.js",
   "types": "src/Mbn.d.ts",

@@ -1,4 +1,4 @@
-/* Mbn v1.52.0 / 05.07.2022 | https://mbn.li | Copyright (c) 2016-2022 Mikołaj Błajek | https://mbn.li/LICENSE */
+/* Mbn v1.52.1 / 09.02.2023 | https://mbn.li | Copyright (c) 2016-2023 Mikołaj Błajek | https://mbn.li/LICENSE */
 "use strict";
 
 var Mbn = (function () {
@@ -145,7 +145,7 @@ var Mbn = (function () {
     };
 
     //version of Mbn library
-    var MbnV = "1.52.0";
+    var MbnV = "1.52.1";
     //default precision
     var MbnDP = 2;
     //default separator
@@ -464,6 +464,7 @@ var Mbn = (function () {
                 case "number":
                     mbnFromNumber(this, n);
                     return;
+                case "bigint":
                 case "object":
                     if (n instanceof Mbn) {
                         this.set(n);
@@ -1268,19 +1269,21 @@ var Mbn = (function () {
             if (!(vars instanceof Object)) {
                 vars = {};
             }
-            var mtch, comStart, comEnd, i, results = {r0: new Mbn()};
+            var mtch, comStart, comEnd, i, j, results = {r0: new Mbn()};
             while (mtch = expr.match(/{+/)) {
                 mtch = mtch[0];
                 comStart = expr.indexOf(mtch);
                 comEnd = expr.indexOf(mtch.replace(/{/g, "}"), comStart);
-                expr = expr.slice(0, comStart) + ((comEnd === -1)
-                   ? "" : ("\t" + expr.slice(comEnd + mtch.length)))
+                expr = expr.slice(0, comStart) + ((comEnd === -1) ? "" : ("\t" + expr.slice(comEnd + mtch.length)))
             }
             var exprArr = expr.split(";");
             for (i = 0; i < exprArr.length; i++) {
                 expr = exprArr[i].replace(wsRx3, "");
                 results["r" + (i + 1)] = results.r0 = ((expr === "") ? results.r0
                    : mbnCalcSingle(expr, vars, results, varsUsed, checkOmitOptional));
+                for (j = 0; j <= i; j++) {
+                    results["r0" + (j + 1)] = results["r" + (i - j + 1)];
+                }
             }
             return (checkOmitOptional === null) ? results.r0 : varsUsed.vars;
         };
